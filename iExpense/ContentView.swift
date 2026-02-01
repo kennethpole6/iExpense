@@ -133,7 +133,6 @@ struct TypePickerView: View {
                     Button("Use Custom Type") {
                         selectedType = .other
                     }
-                    .buttonStyle(.borderedProminent)
                     .disabled(customTypeLabel.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
@@ -225,7 +224,7 @@ struct SecondView: View {
                 Text(typeLabel)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
             }
             .padding(12)
             .background(Color(.systemGray6))
