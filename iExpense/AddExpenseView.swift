@@ -139,6 +139,7 @@ struct SecondView: View {
                 Label("Remind me", systemImage: "bell")
             }
             .tint(.accentColor)
+            Text("Set a reminder to be notified when this expense is due.").font(.system(size: 12)).foregroundStyle(Color(.secondaryLabel))
 
             if enableReminder {
                 DatePicker(
