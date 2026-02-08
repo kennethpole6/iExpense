@@ -10,6 +10,7 @@ import UserNotifications
 
 struct SecondView: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("totalBudget") private var totalBudget: Double = 0
 
     @State private var name = ""
     @State private var amount = ""
@@ -18,6 +19,7 @@ struct SecondView: View {
     @State private var selectedIcon: String?
     @State private var enableReminder = false
     @State private var reminderDate = Date().addingTimeInterval(3600)
+    @State private var limit = 0.0
 
     let onAdd: (ExpenseItem) -> Void
 
@@ -32,6 +34,7 @@ struct SecondView: View {
             VStack(spacing: 20) {
                 header
                 amountField
+                limitField
                 descriptionField
                 typePicker
                 iconPicker
@@ -46,6 +49,9 @@ struct SecondView: View {
                         dismiss()
                     }
                 }
+            }
+            .onAppear {
+                if limit == 0 { limit = max(0, totalBudget) }
             }
         }
     }
@@ -71,6 +77,49 @@ struct SecondView: View {
             text: $amount,
             keyboard: .decimalPad
         )
+    }
+
+    private var limitField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text("Limit")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                Spacer()
+                if totalBudget > 0 {
+                    Text(
+                        "of "
+                            + (totalBudget as NSNumber).doubleValue.formatted(
+                                .currency(
+                                    code: Locale.current.currency?.identifier
+                                        ?? "PHP"
+                                )
+                            )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                }
+            }
+            Text("Set a limit to help manage your spending.").font(
+                .system(size: 12)
+            ).foregroundStyle(.secondary)
+            TextField(
+                "0.00",
+                value: $limit,
+                format: .currency(
+                    code: Locale.current.currency?.identifier ?? "PHP"
+                )
+            )
+            .keyboardType(.decimalPad)
+            .padding(12)
+            .background(Color(.systemGray6))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            if let amt = Double(amount), limit > 0, amt > limit {
+                Text("Amount exceeds limit")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
     }
 
     private var descriptionField: some View {
@@ -139,7 +188,8 @@ struct SecondView: View {
                 Label("Remind me", systemImage: "bell")
             }
             .tint(.accentColor)
-            Text("Set a reminder to be notified when this expense is due.").font(.system(size: 12)).foregroundStyle(Color(.secondaryLabel))
+            Text("Set a reminder to be notified when this expense is due.")
+                .font(.system(size: 12)).foregroundStyle(Color(.secondaryLabel))
 
             if enableReminder {
                 DatePicker(
@@ -169,7 +219,10 @@ struct SecondView: View {
     }
 
     private var canSave: Bool {
-        !name.isEmpty && Double(amount) != nil
+        if name.isEmpty { return false }
+        guard let amt = Double(amount) else { return false }
+        if limit > 0 { return amt <= limit }
+        return true
     }
 
     private func save() {
@@ -186,7 +239,7 @@ struct SecondView: View {
         scheduleReminderIfNeeded(for: item)
         dismiss()
     }
-    
+
     private func scheduleReminderIfNeeded(for item: ExpenseItem) {
         guard let date = item.reminderDate, date > Date() else { return }
 
@@ -196,7 +249,9 @@ struct SecondView: View {
             case .authorized, .provisional, .ephemeral:
                 scheduleNotification(item: item, at: date)
             case .notDetermined:
-                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                center.requestAuthorization(options: [.alert, .sound, .badge]) {
+                    granted,
+                    _ in
                     if granted {
                         scheduleNotification(item: item, at: date)
                     }
@@ -210,13 +265,24 @@ struct SecondView: View {
     private func scheduleNotification(item: ExpenseItem, at date: Date) {
         let content = UNMutableNotificationContent()
         content.title = "Upcoming Expense"
-        content.body = "You have an upcoiming expense \(item.name) amounting of \(item.amount.formatted(.currency(code: Locale.current.currency?.identifier ?? "PHP")))"
+        content.body =
+            "You have an upcoiming expense \(item.name) amounting of \(item.amount.formatted(.currency(code: Locale.current.currency?.identifier ?? "PHP")))"
         content.sound = .default
 
-        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+        let triggerDate = Calendar.current.dateComponents(
+            [.year, .month, .day, .hour, .minute],
+            from: date
+        )
+        let trigger = UNCalendarNotificationTrigger(
+            dateMatching: triggerDate,
+            repeats: false
+        )
 
-        let request = UNNotificationRequest(identifier: item.id.uuidString, content: content, trigger: trigger)
+        let request = UNNotificationRequest(
+            identifier: item.id.uuidString,
+            content: content,
+            trigger: trigger
+        )
         UNUserNotificationCenter.current().add(request)
     }
 }

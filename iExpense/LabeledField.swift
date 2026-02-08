@@ -16,7 +16,7 @@ struct LabeledField: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .fontWeight(.semibold)
 
             TextField(placeholder, text: $text)
                 .padding(12)
