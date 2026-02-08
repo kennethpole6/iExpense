@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct SecondView: View {
     @Environment(\.dismiss) private var dismiss
@@ -15,6 +16,8 @@ struct SecondView: View {
     @State private var selectedType: ExpenseType = .bills
     @State private var customTypeLabel = ""
     @State private var selectedIcon: String?
+    @State private var enableReminder = false
+    @State private var reminderDate = Date().addingTimeInterval(3600)
 
     let onAdd: (ExpenseItem) -> Void
 
@@ -32,6 +35,7 @@ struct SecondView: View {
                 descriptionField
                 typePicker
                 iconPicker
+                reminderSection
                 addButton
                 Spacer()
             }
@@ -129,6 +133,28 @@ struct SecondView: View {
         }
     }
 
+    private var reminderSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Toggle(isOn: $enableReminder) {
+                Label("Remind me", systemImage: "bell")
+            }
+            .tint(.accentColor)
+
+            if enableReminder {
+                DatePicker(
+                    "Reminder time",
+                    selection: $reminderDate,
+                    in: Date()...,
+                    displayedComponents: [.date, .hourAndMinute]
+                )
+                .datePickerStyle(.compact)
+            }
+        }
+        .padding(12)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
     private var addButton: some View {
         Button("Add Expense") {
             save()
@@ -152,9 +178,44 @@ struct SecondView: View {
             type: selectedType,
             customTypeLabel: selectedType == .other ? customTypeLabel : nil,
             amount: value,
+            reminderDate: enableReminder ? reminderDate : nil,
             icon: selectedIcon
         )
         onAdd(item)
+        scheduleReminderIfNeeded(for: item)
         dismiss()
+    }
+    
+    private func scheduleReminderIfNeeded(for item: ExpenseItem) {
+        guard let date = item.reminderDate, date > Date() else { return }
+
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                scheduleNotification(item: item, at: date)
+            case .notDetermined:
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
+                    if granted {
+                        scheduleNotification(item: item, at: date)
+                    }
+                }
+            default:
+                break
+            }
+        }
+    }
+
+    private func scheduleNotification(item: ExpenseItem, at date: Date) {
+        let content = UNMutableNotificationContent()
+        content.title = "Upcoming Expense"
+        content.body = "You have an upcoiming expense \(item.name) amounting of \(item.amount.formatted(.currency(code: Locale.current.currency?.identifier ?? "PHP")))"
+        content.sound = .default
+
+        let triggerDate = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+
+        let request = UNNotificationRequest(identifier: item.id.uuidString, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
     }
 }

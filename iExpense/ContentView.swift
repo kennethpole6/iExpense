@@ -44,6 +44,7 @@ struct ExpenseItem: Identifiable, Codable, Equatable {
     let type: ExpenseType
     let customTypeLabel: String?
     let amount: Double
+    let reminderDate: Date?
     let icon: String
 
     init(
@@ -52,6 +53,7 @@ struct ExpenseItem: Identifiable, Codable, Equatable {
         type: ExpenseType,
         customTypeLabel: String? = nil,
         amount: Double,
+        reminderDate: Date? = nil,
         icon: String? = nil
     ) {
         self.id = id
@@ -59,6 +61,7 @@ struct ExpenseItem: Identifiable, Codable, Equatable {
         self.type = type
         self.customTypeLabel = customTypeLabel
         self.amount = amount
+        self.reminderDate = reminderDate
         self.icon = icon ?? type.icon
     }
 
