@@ -10,6 +10,7 @@ import UserNotifications
 
 struct SecondView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @AppStorage("totalBudget") private var totalBudget: Double = 0
 
     @State private var name = ""
@@ -111,8 +112,9 @@ struct SecondView: View {
                 )
             )
             .keyboardType(.decimalPad)
-            .padding(12)
-            .background(Color(.systemGray6))
+            .padding(14)
+            .background(Color(.secondarySystemBackground))
+            .clipShape(Capsule())
             .clipShape(RoundedRectangle(cornerRadius: 10))
             if let amt = Double(amount), limit > 0, amt > limit {
                 Text("Amount exceeds limit")
@@ -137,16 +139,24 @@ struct SecondView: View {
                 customTypeLabel: $customTypeLabel
             )
         } label: {
-            HStack {
-                Image(systemName: selectedIcon ?? selectedType.icon)
-                Text(typeLabel)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .foregroundStyle(.primary)
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Category").font(.subheadline)
+                    .fontWeight(.semibold).foregroundStyle(
+                        colorScheme == .dark ? Color.white : Color.black
+                    )
+                HStack {
+                    Image(systemName: selectedIcon ?? selectedType.icon)
+                    Text(typeLabel)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                }
+                .foregroundStyle(
+                    colorScheme == .dark ? Color.white : Color.black
+                )
+                .padding(16)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(Capsule())
             }
-            .padding(12)
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
     }
 
@@ -201,21 +211,22 @@ struct SecondView: View {
                 .datePickerStyle(.compact)
             }
         }
-        .padding(12)
-        .background(Color(.systemGray6))
+        .padding(14)
+        .background(Color(.systemGray5))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private var addButton: some View {
-        Button("Add Expense") {
+        Button {
             save()
+        } label: {
+            Text("Add Expense")
+                .frame(maxWidth: .infinity)
         }
+        .buttonStyle(.borderedProminent)
+        .tint(.accentColor)
+        .controlSize(.large)
         .disabled(!canSave)
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(.black)
-        .foregroundStyle(.white)
-        .cornerRadius(10)
     }
 
     private var canSave: Bool {

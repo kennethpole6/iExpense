@@ -19,10 +19,14 @@ struct LabeledField: View {
                 .fontWeight(.semibold)
 
             TextField(placeholder, text: $text)
-                .padding(12)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .padding(14)
+                .background(Color(.secondarySystemBackground))
+                .clipShape(Capsule())
                 .keyboardType(keyboard)
         }
     }
+}
+
+#Preview {
+    LabeledField(title: "Title", placeholder: "Placeholder", text: .init(get: { "" }, set: { _ in }))
 }
