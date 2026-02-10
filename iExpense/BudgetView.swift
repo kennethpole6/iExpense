@@ -23,6 +23,7 @@ struct BudgetCategory: Identifiable, Hashable {
 
 struct BudgetView: View {
     @AppStorage("expenses") private var storedData: Data = Data()
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var expenses = Expenses()
 
@@ -72,7 +73,7 @@ struct BudgetView: View {
                 .padding()
             }
             .scrollContentBackground(.hidden)
-            .background(Color(UIColor.systemGray6))
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("Budget")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -195,7 +196,7 @@ extension BudgetView {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.white)
+                .fill(Color(colorScheme == .dark ? .systemGray5 : .white))
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -280,7 +281,7 @@ extension BudgetView {
             .padding(14)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(.white)
+                    .fill(Color(colorScheme == .dark ? .systemGray5 : .white))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -321,12 +322,16 @@ extension BudgetView {
         // Simple icon mapping
         func icon(for name: String) -> String {
             switch name.lowercased() {
-            case "groceries": return "cart"
+            case "bills": return "doc.text"
+            case "electricity": return "bolt.fill"
+            case "internet": return "wifi"
+            case "groceries": return "cart.fill"
+            case "transport", "transportation": return "car.fill"
+            case "entertainment": return "gamecontroller.fill"
             case "dining", "food": return "fork.knife"
-            case "transport", "travel": return "car"
-            case "entertainment": return "gamecontroller"
-            case "utilities", "bills": return "bolt"
-            default: return "creditcard"
+            case "subscriptions", "subscription": return "creditcard.fill"
+            case "other": return "tag"
+            default: return "tag"
             }
         }
 
@@ -353,3 +358,4 @@ extension BudgetView {
 #Preview {
     NavigationStack { BudgetView() }
 }
+
