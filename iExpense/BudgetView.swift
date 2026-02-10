@@ -162,7 +162,6 @@ extension BudgetView {
                         .foregroundStyle(.primary)
                 }
                 .tint(overallProgress < 1.0 ? .blue : .red)
-                .animation(.easeInOut, value: overallProgress)
 
                 HStack {
                     Text(currencyString(totalSpent))
@@ -202,7 +201,6 @@ extension BudgetView {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .strokeBorder(.quaternary, lineWidth: 1)
         )
-        .animation(.default, value: remaining)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             "Budget overview. Total budget \(totalBudget, format: .number). Spent \(totalSpent, format: .number). Remaining \(remaining, format: .number). \(daysLeftInMonth) days left in month."
