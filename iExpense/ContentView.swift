@@ -95,24 +95,35 @@ struct ContentView: View {
         TabView {
             // Expenses Tab
             NavigationStack {
-                List {
-                    ForEach(expenses.items) { item in
-                        HStack {
-                            Image(systemName: item.icon)
-                            VStack(alignment: .leading) {
-                                Text(item.name)
-                                Text(item.displayType)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                Group {
+                    if expenses.items.isEmpty {
+                        EmptyStateView()
+                    } else {
+                        List {
+                            ForEach(expenses.items) { item in
+                                HStack {
+                                    Image(systemName: item.icon)
+                                    VStack(alignment: .leading) {
+                                        Text(item.name)
+                                        Text(item.displayType)
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    Spacer()
+                                    Text(
+                                        item.amount.formatted(
+                                            .currency(code: "PHP")
+                                        )
+                                    )
+                                    .fontWeight(.semibold)
+                                }
                             }
-                            Spacer()
-                            Text(item.amount.formatted(.currency(code: "PHP")))
-                                .fontWeight(.semibold)
+                            .onDelete(perform: delete)
                         }
                     }
-                    .onDelete(perform: delete)
                 }
-                .navigationTitle("Expenses").toolbar {
+                .navigationTitle("Expenses")
+                .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button("Add", systemImage: "plus") {
                             showSheet = true
@@ -124,9 +135,9 @@ struct ContentView: View {
                 }
                 .onAppear(perform: load)
                 .onChange(of: expenses.items) { save() }
-            }
-            .sheet(isPresented: $showSheet) {
-                SecondView { expenses.items.append($0) }
+                .sheet(isPresented: $showSheet) {
+                    SecondView { expenses.items.append($0) }
+                }
             }
             .tabItem {
                 Image(systemName: "square.3.stack.3d.middle.fill")

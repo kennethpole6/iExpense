@@ -83,7 +83,10 @@ struct BudgetView: View {
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Recalculate", systemImage: "arrow.2.circlepath.circle") { recalcFromExpenses() }
+                    Button(
+                        "Recalculate",
+                        systemImage: "arrow.2.circlepath.circle"
+                    ) { recalcFromExpenses() }
                 }
             }
             .sheet(isPresented: $showingBudgetSheet) {
@@ -212,9 +215,50 @@ extension BudgetView {
         VStack(alignment: .leading, spacing: 12) {
             Text("Category Breakdown")
                 .font(.headline)
-            LazyVStack(spacing: 12) {
-                ForEach(categories) { category in
-                    categoryCard(category)
+
+            if expenses.items.isEmpty {
+                VStack(alignment: .center, spacing: 12) {
+                    EmptyStateView()
+                }
+                .frame(maxWidth: .infinity)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            Color(colorScheme == .dark ? .systemGray5 : .white)
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(.quaternary, lineWidth: 1)
+                )
+            } else if categories.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("No categories to show yet")
+                        .font(.subheadline).fontWeight(.semibold)
+                        .multilineTextAlignment(.center)
+                    Text("Tap Recalculate to refresh your category breakdown.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(
+                            Color(colorScheme == .dark ? .systemGray5 : .white)
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(.quaternary, lineWidth: 1)
+                )
+            } else {
+                LazyVStack(spacing: 12) {
+                    ForEach(categories) { category in
+                        categoryCard(category)
+                    }
                 }
             }
         }
@@ -358,4 +402,3 @@ extension BudgetView {
 #Preview {
     NavigationStack { BudgetView() }
 }
-
