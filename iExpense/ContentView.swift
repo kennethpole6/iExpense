@@ -125,12 +125,16 @@ struct ContentView: View {
                 .navigationTitle("Expenses")
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
-                        Button("Add", systemImage: "plus") {
+                        Button {
                             showSheet = true
+                        } label: {
+                            Label("Add", systemImage: "plus")
                         }
                     }
-                    ToolbarItem(placement: .topBarTrailing) {
-                        EditButton()
+                    if !expenses.items.isEmpty {
+                        ToolbarItem(placement: .topBarTrailing) {
+                            EditButton()
+                        }
                     }
                 }
                 .onAppear(perform: load)
